@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum KYCStatus {
+  NOT_STARTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  FUNDED
+  TRENDING
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  BUY
+  SELL
+  RENTAL
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  phone           String?        @unique
+  name            String?
+  kycStatus       KYCStatus      @default(NOT_STARTED)
+  panNumber       String?
+  aadhaarNumber   String?
+  walletBalance   Float          @default(0)
+  investments     Investment[]
+  transactions    Transaction[]
+  orders          Order[]
+  certificates    Certificate[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Property {
+  id               String         @id @default(uuid())
+  title            String
+  location         String
+  description      String
+  totalValuation   Float
+  minInvestment    Float          @default(500)
+  expectedROI      Float          // Annual ROI %
+  rentalYield      Float          // Annual Rental Yield %
+  totalShares      Float          // Change to Float for fractional equity
+  fundedShares     Float          @default(0) // Change to Float
+  imageUrl         String         // Primary property image URL
+  status           PropertyStatus @default(AVAILABLE)
+  investments      Investment[]
+  orders           Order[]
+  certificates     Certificate[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Investment {
+  id               String         @id @default(uuid())
+  userId           String
+  propertyId       String
+  sharesOwned      Float          // Change to Float
+  averagePrice     Float
+  user             User           @relation(fields: [userId], references: [id])
+  property         Property       @relation(fields: [propertyId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([userId, propertyId])
+}
+
+model Transaction {
+  id               String            @id @default(uuid())
+  userId           String
+  type             TransactionType
+  amount           Float
+  status           TransactionStatus @default(PENDING)
+  referenceId      String?           // External payment ID (Razorpay, etc.)
+  user             User              @relation(fields: [userId], references: [id])
+  createdAt        DateTime          @default(now())
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  propertyId       String
+  sellerId         String
+  type             String      @default("SELL")
+  pricePerShare    Float
+  totalShares      Float       // Change to Float
+  status           OrderStatus @default(OPEN)
+  property         Property    @relation(fields: [propertyId], references: [id])
+  seller           User        @relation(fields: [sellerId], references: [id])
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model Certificate {
+  id               String   @id @default(uuid())
+  userId           String
+  propertyId       String
+  stakePercentage  Float
+  uniqueCode       String   @unique
+  barcodeValue     String
+  user             User     @relation(fields: [userId], references: [id])
+  property         Property @relation(fields: [propertyId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
