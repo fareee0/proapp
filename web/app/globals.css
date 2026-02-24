@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #FFFFFF;
+}
+
+body {
+  background-color: #050505 !important;
+  color: #FFFFFF !important;
+  font-family: sans-serif;
+  margin: 0;
+}
+
+@theme {
+  --color-accent: #00D09C;
+  --color-accent-hover: #00B086;
+  --color-muted: #A0A0A0;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00D09C 0%, #00B1FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
